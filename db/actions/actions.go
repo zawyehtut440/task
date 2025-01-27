@@ -37,11 +37,12 @@ func Actions(action string, arg ...string) {
 		addTask, _ := addTODO(db, arg[0])
 		fmt.Printf("Added \"%s\" to your task list.\n", addTask)
 	case DO:
-		err := doTask(db, arg[0])
+		successMsg, err := doTask(db, arg[0])
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		fmt.Println(successMsg)
 	case LIST:
 		tasks, _ := listTODO(db)
 		fmt.Println("You have the following tasks:")
@@ -117,23 +118,31 @@ func removeTask(db *bolt.DB, removeNo string) (string, error) {
 }
 
 // mark the finished task to complete bucket
-func doTask(db *bolt.DB, doneNo string) error {
+func doTask(db *bolt.DB, doneNo string) (string, error) {
+	var successMsg string
+
 	// remove task from todo bucket
 	finishedTask, err := removeTask(db, doneNo)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// add finishedTask to complete bucket
-	return db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte("complete"))
 		if err != nil {
 			return err
 		}
 		t, task := time.Now().Format(time.DateTime), finishedTask
-		fmt.Printf("At %s, you finished \"%s\"\n", t, task)
+		successMsg = fmt.Sprintf("At %s, you finished \"%s\"", t, task)
 		return bucket.Put([]byte(t), []byte(task))
 	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return successMsg, nil
 }
 
 // show todo tasks list
