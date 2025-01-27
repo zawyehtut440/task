@@ -5,8 +5,10 @@ import (
 	"os"
 
 	"task/cmd/add"
+	"task/cmd/completed"
 	"task/cmd/do"
 	"task/cmd/list"
+	"task/cmd/remove"
 
 	"github.com/spf13/cobra"
 )
@@ -30,4 +32,6 @@ func init() {
 	rootCmd.AddCommand(add.AddCmd)
 	rootCmd.AddCommand(do.DoCmd)
 	rootCmd.AddCommand(list.ListCmd)
+	rootCmd.AddCommand(remove.RemoveCmd)
+	rootCmd.AddCommand(completed.CompletedCmd)
 }
